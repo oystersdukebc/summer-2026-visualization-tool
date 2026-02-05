@@ -4,6 +4,7 @@ library(lubridate)
 library(plotly)
 library(readr)
 library(readxl)
+library(shinyWidgets)
 
 # Load data
 # CMAST
@@ -212,6 +213,14 @@ ui <- fluidPage(
       
       br(),
       
+      materialSwitch(
+        inputId = "show_ysi",
+        label = "Display YSI Data",
+        value = FALSE
+      ),
+      
+      br(),
+      
       h4("Edit Plot Title:"),
       textInput("custom_title", NULL, "Full Summer Environmental Data")
     ),
@@ -237,8 +246,8 @@ server <- function(input, output) {
       p
     }
     
-    add_ysi_safe <- function(p, data, x, y, line_name){
-      if(!is.null(data[[y]]) && nrow(data) > 0){
+    add_ysi_safe <- function(p, data, x, y, line_name, show){
+      if(show && !is.null(data[[y]]) && nrow(data) > 0){
         p <- add_markers(
           p,
           x = data[[x]],
@@ -268,19 +277,23 @@ server <- function(input, output) {
       
       if(show_param("Temperature")){
         p <- add_trace_safe(p, cmast_do, "DateTime", "Temp_C", "Temp CMAST")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp CMAST")
+        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp CMAST",
+                          show = input$show_ysi)
       }
       if(show_param("Dissolved Oxygen")){
         p <- add_trace_safe(p, cmast_do, "DateTime", "DO", "DO CMAST")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO CMAST")
+        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO CMAST",
+                          show = input$show_ysi)
       }
       if(show_param("pH")){
         p <- add_trace_safe(p, cmast_ph, "DateTime", "pH", "pH CMAST")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH CMAST")
+        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH CMAST",
+                          show = input$show_ysi)
       }
       if(show_param("Salinity")){
         p <- add_trace_safe(p, cmast_sal, "DateTime", "Salinity", "Salinity CMAST")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity CMAST")
+        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity CMAST",
+                          show = input$show_ysi)
       }
     }
     
@@ -289,19 +302,23 @@ server <- function(input, output) {
       
       if(show_param("Temperature")){
         p <- add_trace_safe(p, stump_do, "DateTime", "Temp_C", "Temp Stump")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Stump")
+        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Stump",
+                          show = input$show_ysi)
       }
       if(show_param("Dissolved Oxygen")){
         p <- add_trace_safe(p, stump_do, "DateTime", "DO", "DO Stump")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Stump")
+        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Stump",
+                          show = input$show_ysi)
       }
       if(show_param("pH")){
         p <- add_trace_safe(p, stump_ph, "DateTime", "pH", "pH Stump")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Stump")
+        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Stump",
+                          show = input$show_ysi)
       }
       if(show_param("Salinity")){
         p <- add_trace_safe(p, stump_sal, "DateTime", "Salinity", "Salinity Stump")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Stump")
+        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Stump",
+                          show = input$show_ysi)
       }
     }
     
@@ -310,19 +327,23 @@ server <- function(input, output) {
       
       if(show_param("Temperature")){
         p <- add_trace_safe(p, ward_do, "DateTime", "Temp_C", "Temp Ward Creek")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Ward Creek")
+        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Ward Creek",
+                          show = input$show_ysi)
       }
       if(show_param("Dissolved Oxygen")){
         p <- add_trace_safe(p, ward_do, "DateTime", "DO", "DO Ward Creek")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Ward Creek")
+        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Ward Creek",
+                          show = input$show_ysi)
       }
       if(show_param("pH")){
         p <- add_trace_safe(p, ward_ph, "DateTime", "pH", "pH Ward Creek")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Ward Creek")
+        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Ward Creek",
+                          show = input$show_ysi)
       }
       if(show_param("Salinity")){
         p <- add_trace_safe(p, ward_sal, "DateTime", "Salinity", "Salinity Ward Creek")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Ward Creek")
+        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Ward Creek",
+                          show = input$show_ysi)
       }
     }
     
@@ -331,19 +352,23 @@ server <- function(input, output) {
       
       if(show_param("Temperature")){
         p <- add_trace_safe(p, duml_do, "DateTime", "Temp_C", "Temp DUML")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp DUML")
+        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp DUML",
+                          show = input$show_ysi)
       }
       if(show_param("Dissolved Oxygen")){
         p <- add_trace_safe(p, duml_do, "DateTime", "DO", "DO DUML")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO DUML")
+        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO DUML",
+                          show = input$show_ysi)
       }
       if(show_param("pH")){
         p <- add_trace_safe(p, duml_ph, "DateTime", "pH", "pH DUML")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH DUML")
+        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH DUML",
+                          show = input$show_ysi)
       }
       if(show_param("Salinity")){
         p <- add_trace_safe(p, duml_sal, "DateTime", "Salinity", "Salinity DUML")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity DUML")
+        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity DUML",
+                          show = input$show_ysi)
       }
     }
     
@@ -352,19 +377,23 @@ server <- function(input, output) {
       
       if(show_param("Temperature")){
         p <- add_trace_safe(p, nelson_do, "DateTime", "Temp_C", "Temp Nelson")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Nelson")
+        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Nelson",
+                          show = input$show_ysi)
       }
       if(show_param("Dissolved Oxygen")){
         p <- add_trace_safe(p, nelson_do, "DateTime", "DO", "DO Nelson")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Nelson")
+        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Nelson",
+                          show = input$show_ysi)
       }
       if(show_param("pH")){
         p <- add_trace_safe(p, nelson_ph, "DateTime", "pH", "pH Nelson")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Nelson")
+        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Nelson",
+                          show = input$show_ysi)
       }
       if(show_param("Salinity")){
         p <- add_trace_safe(p, nelson_sal, "DateTime", "Salinity", "Salinity Nelson")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Nelson")
+        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Nelson",
+                          show = input$show_ysi)
       }
     }
     
