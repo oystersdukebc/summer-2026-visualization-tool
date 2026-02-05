@@ -5,110 +5,108 @@ library(plotly)
 library(readr)
 library(readxl)
 
-setwd("C:/Users/annab/OneDrive/Desktop/Summer2026VisualizationTool")
-
 # Load data
 # CMAST
-cmast_do <- read_excel("Final Datasets/CMAST_DO_Final.xlsx") %>%
+cmast_do <- read_excel("data/CMAST_DO_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          DO = as.numeric(DomgL),
          Temp_C = as.numeric(Temp_C),
          Farm = "CMAST") %>%
   select(DateTime, Farm, DO, Temp_C)
 
-cmast_ph <- read_excel("Final Datasets/CMAST_pH_Final.xlsx") %>%
+cmast_ph <- read_excel("data/CMAST_pH_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          pH = as.numeric(pH),
          Farm = "CMAST") %>%
   select(DateTime, Farm, pH)
 
-cmast_sal <- read_excel("Final Datasets/CMAST_Con_Final.xlsx") %>%
+cmast_sal <- read_excel("data/CMAST_Con_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          Salinity = as.numeric(Sal_ppt),
          Farm = "CMAST") %>%
   select(DateTime, Farm, Salinity)
 
 # Stump Sound
-stump_do <- read_excel("Final Datasets/StumpSound_DO_Final.xlsx") %>%
+stump_do <- read_excel("data/StumpSound_DO_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          DO = as.numeric(DomgL),
          Temp_C = as.numeric(Temp_C),
          Farm = "Stump Sound") %>%
   select(DateTime, Farm, DO, Temp_C)
 
-stump_ph <- read_excel("Final Datasets/StumpSound_pH_Final.xlsx") %>%
+stump_ph <- read_excel("data/StumpSound_pH_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          pH = as.numeric(pH),
          Farm = "Stump Sound") %>%
   select(DateTime, Farm, pH)
 
-stump_sal <- read_excel("Final Datasets/StumpSound_Con_Final.xlsx") %>%
+stump_sal <- read_excel("data/StumpSound_Con_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          Salinity = as.numeric(Sal_ppt),
          Farm = "Stump Sound") %>%
   select(DateTime, Farm, Salinity)
 
 # Ward Creek
-ward_do <- read_excel("Final Datasets/WardCreek_DO_Final.xlsx") %>%
+ward_do <- read_excel("data/WardCreek_DO_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          DO = as.numeric(DomgL),
          Temp_C = as.numeric(Temp_C),
          Farm = "Ward Creek") %>%
   select(DateTime, Farm, DO, Temp_C)
 
-ward_ph <- read_excel("Final Datasets/WardCreek_pH_Final.xlsx") %>%
+ward_ph <- read_excel("data/WardCreek_pH_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          pH = as.numeric(pH),
          Farm = "Ward Creek") %>%
   select(DateTime, Farm, pH)
 
-ward_sal <- read_excel("Final Datasets/WardCreek_Con_Final.xlsx") %>%
+ward_sal <- read_excel("data/WardCreek_Con_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          Salinity = as.numeric(Sal_ppt),
          Farm = "Ward Creek") %>%
   select(DateTime, Farm, Salinity)
 
 # DUML
-duml_ph <- read_excel("Final Datasets/DUML_pH_Final.xlsx") %>%
+duml_ph <- read_excel("data/DUML_pH_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          pH = as.numeric(pH),
          Farm = "DUML") %>%
   select(DateTime, Farm, pH)
 
-duml_do <- read_excel("Final Datasets/DUML_DO_Final.xlsx") %>%
+duml_do <- read_excel("data/DUML_DO_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          DO = as.numeric(DomgL),
          Temp_C = as.numeric(Temp_C),
          Farm = "DUML") %>%
   select(DateTime, Farm, DO, Temp_C)
 
-duml_sal <- read_excel("Final Datasets/DUML_Con_Final.xlsx") %>%
+duml_sal <- read_excel("data/DUML_Con_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          Salinity = as.numeric(Sal_ppt),
          Farm = "DUML") %>%
   select(DateTime, Farm, Salinity)
 
 # Nelson Bay
-nelson_do <- read_excel("Final Datasets/Nelson_DO_Final.xlsx") %>%
+nelson_do <- read_excel("data/Nelson_DO_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          DO = as.numeric(DomgL),
          Temp_C = as.numeric(Temp_C),
          Farm = "Nelson Bay") %>%
   select(DateTime, Farm, DO, Temp_C)
 
-nelson_ph <- read_excel("Final Datasets/Nelson_pH_Final.xlsx") %>%
+nelson_ph <- read_excel("data/Nelson_pH_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          pH = as.numeric(pH),
          Farm = "Nelson Bay") %>%
   select(DateTime, Farm, pH)
 
-nelson_sal <- read_excel("Final Datasets/Nelson_Con_Final.xlsx") %>%
+nelson_sal <- read_excel("data/Nelson_Con_Final.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          Salinity = as.numeric(Sal_ppt),
          Farm = "Nelson Bay") %>%
   select(DateTime, Farm, Salinity)
 
-ysi <- read_excel("Final Datasets/YSI.xlsx") %>%
+ysi <- read_excel("data/YSI.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          Temp_C = as.numeric(Temp_C),
          Salinity = as.numeric(Sal_ppt),
