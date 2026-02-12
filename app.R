@@ -1,3 +1,21 @@
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+##Clones Repository to R
+system("git clone  https://github.com/oystersdukebc/summer-2026-visualization-tool.git")
+
+##Pulls in repository and sets it as the working directory
+
+setwd("summer-2026-visualization-tool")
+system("git pull origin main")  # or replace 'main' with the correct branch
+
+##Setting the "Cleaned" folder as the working directory
+
+setwd("Cleaned")
+
+rm(list = ls())
+
 library(shiny)
 library(tidyverse)
 library(lubridate)
