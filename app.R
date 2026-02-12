@@ -2,161 +2,98 @@ library(shiny)
 library(tidyverse)
 library(lubridate)
 library(plotly)
-library(readr)
 library(readxl)
 library(shinyWidgets)
 
-# Load data
-# CMAST
-cmast_do <- read_excel("Final Datasets/CMAST_DO_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         DO = as.numeric(DomgL),
-         Temp_C = as.numeric(Temp_C),
-         Farm = "CMAST") %>%
-  select(DateTime, Farm, DO, Temp_C)
+setwd("C:/Users/annab/OneDrive/Desktop/Cleaned")
 
-cmast_ph <- read_excel("Final Datasets/CMAST_pH_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         pH = as.numeric(pH),
-         Farm = "CMAST") %>%
-  select(DateTime, Farm, pH)
+# time interval function
+add_time_columns <- function(df){
+  df %>%
+    mutate(
+      Month = month(DateTime),
+      Day = day(DateTime)
+    )
+}
 
-cmast_sal <- read_excel("Final Datasets/CMAST_Con_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         Salinity = as.numeric(Sal_ppt),
-         Farm = "CMAST") %>%
-  select(DateTime, Farm, Salinity)
+filter_time <- function(df, month_val, biweek_val){
+  if(month_val != "full"){
+    df <- df %>% filter(Month == as.numeric(month_val))
+  }
+  
+  if(biweek_val == "1"){
+    df <- df %>% filter(Day >= 1 & Day <= 15)
+  }
+  
+  if(biweek_val == "2"){
+    df <- df %>% filter(Day >= 16)
+  }
+  
+  df
+}
 
-# Stump Sound
-stump_do <- read_excel("Final Datasets/StumpSound_DO_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         DO = as.numeric(DomgL),
-         Temp_C = as.numeric(Temp_C),
-         Farm = "Stump Sound") %>%
-  select(DateTime, Farm, DO, Temp_C)
+# load data
+load_do <- function(file, farm){
+  read_excel(file) %>%
+    mutate(DateTime = ymd_hms(DateTime),
+           DO = as.numeric(DomgL),
+           Temp_C = as.numeric(Temp_C),
+           Farm = farm) %>%
+    select(DateTime, Farm, DO, Temp_C) %>%
+    add_time_columns()
+}
 
-stump_ph <- read_excel("Final Datasets/StumpSound_pH_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         pH = as.numeric(pH),
-         Farm = "Stump Sound") %>%
-  select(DateTime, Farm, pH)
+load_ph <- function(file, farm){
+  read_excel(file) %>%
+    mutate(DateTime = ymd_hms(DateTime),
+           pH = as.numeric(pH),
+           Farm = farm) %>%
+    select(DateTime, Farm, pH) %>%
+    add_time_columns()
+}
 
-stump_sal <- read_excel("Final Datasets/StumpSound_Con_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         Salinity = as.numeric(Sal_ppt),
-         Farm = "Stump Sound") %>%
-  select(DateTime, Farm, Salinity)
+load_sal <- function(file, farm){
+  read_excel(file) %>%
+    mutate(DateTime = ymd_hms(DateTime),
+           Salinity = as.numeric(Sal_ppt),
+           Farm = farm) %>%
+    select(DateTime, Farm, Salinity) %>%
+    add_time_columns()
+}
 
-# Ward Creek
-ward_do <- read_excel("Final Datasets/WardCreek_DO_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         DO = as.numeric(DomgL),
-         Temp_C = as.numeric(Temp_C),
-         Farm = "Ward Creek") %>%
-  select(DateTime, Farm, DO, Temp_C)
+cmast_do   <- load_do("CMAST_DO_Cleaned.xlsx","CMAST")
+cmast_ph   <- load_ph("CMAST_pH_Cleaned.xlsx","CMAST")
+cmast_sal  <- load_sal("CMAST_Con_Cleaned.xlsx","CMAST")
 
-ward_ph <- read_excel("Final Datasets/WardCreek_pH_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         pH = as.numeric(pH),
-         Farm = "Ward Creek") %>%
-  select(DateTime, Farm, pH)
+stump_do   <- load_do("StumpSound_DO_Cleaned.xlsx","Stump Sound")
+stump_ph   <- load_ph("StumpSound_pH_Cleaned.xlsx","Stump Sound")
+stump_sal  <- load_sal("StumpSound_Con_Cleaned.xlsx","Stump Sound")
 
-ward_sal <- read_excel("Final Datasets/WardCreek_Con_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         Salinity = as.numeric(Sal_ppt),
-         Farm = "Ward Creek") %>%
-  select(DateTime, Farm, Salinity)
+ward_do    <- load_do("WardCreek_DO_Cleaned.xlsx","Ward Creek")
+ward_ph    <- load_ph("WardCreek_pH_Cleaned.xlsx","Ward Creek")
+ward_sal   <- load_sal("WardCreek_Con_Cleaned.xlsx","Ward Creek")
 
-# DUML
-duml_ph <- read_excel("Final Datasets/DUML_pH_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         pH = as.numeric(pH),
-         Farm = "DUML") %>%
-  select(DateTime, Farm, pH)
+duml_do    <- load_do("DUML_DO_Cleaned.xlsx","DUML")
+duml_ph    <- load_ph("DUML_pH_Cleaned.xlsx","DUML")
+duml_sal   <- load_sal("DUML_Con_Cleaned.xlsx","DUML")
 
-duml_do <- read_excel("Final Datasets/DUML_DO_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         DO = as.numeric(DomgL),
-         Temp_C = as.numeric(Temp_C),
-         Farm = "DUML") %>%
-  select(DateTime, Farm, DO, Temp_C)
+nelson_do  <- load_do("Nelson_DO_Cleaned.xlsx","Nelson Bay")
+nelson_ph  <- load_ph("Nelson_pH_Cleaned.xlsx","Nelson Bay")
+nelson_sal <- load_sal("Nelson_Con_Cleaned.xlsx","Nelson Bay")
 
-duml_sal <- read_excel("Final Datasets/DUML_Con_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         Salinity = as.numeric(Sal_ppt),
-         Farm = "DUML") %>%
-  select(DateTime, Farm, Salinity)
-
-# Nelson Bay
-nelson_do <- read_excel("Final Datasets/Nelson_DO_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         DO = as.numeric(DomgL),
-         Temp_C = as.numeric(Temp_C),
-         Farm = "Nelson Bay") %>%
-  select(DateTime, Farm, DO, Temp_C)
-
-nelson_ph <- read_excel("Final Datasets/Nelson_pH_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         pH = as.numeric(pH),
-         Farm = "Nelson Bay") %>%
-  select(DateTime, Farm, pH)
-
-nelson_sal <- read_excel("Final Datasets/Nelson_Con_Final.xlsx") %>%
-  mutate(DateTime = ymd_hms(DateTime),
-         Salinity = as.numeric(Sal_ppt),
-         Farm = "Nelson Bay") %>%
-  select(DateTime, Farm, Salinity)
-
-ysi <- read_excel("Final Datasets/YSI.xlsx") %>%
+ysi <- read_excel("YSI.xlsx") %>%
   mutate(DateTime = ymd_hms(DateTime),
          Temp_C = as.numeric(Temp_C),
          Salinity = as.numeric(Sal_ppt),
          pH = as.numeric(pH),
          DO = as.numeric(DomgL),
          Farm = as.character(Farm)) %>%
-  select(DateTime, Farm, Temp_C, Salinity, pH, DO)
+  select(DateTime, Farm, Temp_C, Salinity, pH, DO) %>%
+  add_time_columns()
 
-all_farms <- list(
-  "CMAST" = list(
-    do  = cmast_do,
-    ph  = cmast_ph,
-    sal = cmast_sal,
-    ysi = ysi %>% filter(Farm == "CMAST")
-  ),
-  
-  "Stump Sound" = list(
-    do  = stump_do,
-    ph  = stump_ph,
-    sal = stump_sal,
-    ysi = ysi %>% filter(Farm == "Stump Sound")
-  ),
-  
-  "Ward Creek" = list(
-    do  = ward_do,
-    ph  = ward_ph,
-    sal = ward_sal,
-    ysi = ysi %>% filter(Farm == "Ward Creek")
-  ),
-  
-  "DUML" = list(
-    do  = duml_do,
-    ph  = duml_ph,
-    sal = duml_sal,
-    ysi = ysi %>% filter(Farm == "DUML")
-  ),
-  
-  "Nelson Bay" = list(
-    do  = nelson_do,
-    ph  = nelson_ph,
-    sal = nelson_sal,
-    ysi = ysi %>% filter(Farm == "Nelson Bay")
-  )
-)
+farm_list  <- c("CMAST","Stump Sound","Ward Creek","DUML","Nelson Bay")
+param_list <- c("Temperature","Dissolved Oxygen","pH","Salinity")
 
-farm_list <- c("CMAST", "Stump Sound", "Ward Creek", "DUML", "Nelson Bay")
-param_list <- c("Temperature", "Dissolved Oxygen", "pH", "Salinity")
-
-# Assign colors
 colors <- c(
   # CMAST
   "Temp CMAST" = "#729ECE",
@@ -171,10 +108,10 @@ colors <- c(
   "Salinity Stump" = "#FF9E4A",
   
   # Ward
-  "Temp Ward Creek" = "#6DCCDA",
-  "DO Ward Creek" = "#ff7f0e",
-  "pH Ward Creek" = "#1f9e89",
-  "Salinity Ward Creek" = "#bc80bd",
+  "Temp Ward" = "#6DCCDA",
+  "DO Ward" = "#ff7f0e",
+  "pH Ward" = "#1f9e89",
+  "Salinity Ward" = "#bc80bd",
   
   # DUML
   "Temp DUML" = "#d62728",
@@ -191,217 +128,173 @@ colors <- c(
 
 # UI
 ui <- fluidPage(
+  
   titlePanel("Summer 2026 Data Visualization Tool"),
+  
+  tabsetPanel(
+    id="month_tabs",
+    type="tabs",
+    tabPanel("Full Summer", value="full"),
+    tabPanel("May", value="5"),
+    tabPanel("June", value="6"),
+    tabPanel("July", value="7"),
+    tabPanel("August", value="8"),
+    tabPanel("September", value="9")
+  ),
+  
+  br(),
   
   sidebarLayout(
     sidebarPanel(
-      h4("Select Farms:"),
-      checkboxGroupInput(
-        "farm_select", NULL,
-        choices = farm_list,
-        selected = farm_list
-      ),
       
-      br(),
+      h4("Select Time Interval"),
+      radioButtons("biweek",
+                   NULL,
+                   choices=c("Full Month"="full",
+                             "First Biweek"="1",
+                             "Second Biweek"="2"),
+                   selected="full"),
       
-      h4("Select Parameters:"),
-      checkboxGroupInput(
-        "param_select", NULL,
-        choices = param_list,
-        selected = param_list
-      ),
+      hr(),
       
-      br(),
+      h4("Select Farms"),
+      checkboxGroupInput("farm_select",NULL,farm_list,selected=farm_list),
       
-      materialSwitch(
-        inputId = "show_ysi",
-        label = "Display YSI Data",
-        value = FALSE
-      ),
+      hr(),
       
-      br(),
+      h4("Select Parameters"),
+      checkboxGroupInput("param_select",NULL,param_list,selected=param_list),
+      
+      hr(),
+      
+      materialSwitch("show_ysi","Display YSI Data",value=FALSE),
+      
+      hr(),
       
       h4("Edit Plot Title:"),
-      textInput("custom_title", NULL, "Full Summer Environmental Data")
+      textInput("custom_title", NULL, "Environmental Data")
     ),
     
     mainPanel(
-      plotlyOutput("plot", height = "650px")
+      plotlyOutput("plot",height="700px")
     )
   )
 )
 
 # Server
-server <- function(input, output) {
+server <- function(input, output){
   
   output$plot <- renderPlotly({
+    
+    month_val  <- input$month_tabs
+    biweek_val <- input$biweek
+    
     p <- plot_ly()
     
-    add_trace_safe <- function(p, data, x, y, name){
-      if(!is.null(data[[y]])) {
-        p <- add_lines(p, x = data[[x]], y = data[[y]],
-                       name = name,
-                       line = list(color = colors[name]))
-      }
-      p
-    }
+    all_y_values <- c()
     
-    add_ysi_safe <- function(p, data, x, y, line_name, show){
-      if(show && !is.null(data[[y]]) && nrow(data) > 0){
-        p <- add_markers(
+    add_trace_auto <- function(data, yvar, name, farm_name){
+      
+      data_filtered <- filter_time(data, month_val, biweek_val)
+      
+      if(nrow(data_filtered) > 0 && yvar %in% colnames(data_filtered)){
+        
+        all_y_values <<- c(all_y_values, data_filtered[[yvar]])
+        
+        trace_color <- colors[name]
+        
+        p <<- add_lines(
           p,
-          x = data[[x]],
-          y = data[[y]],
-          name = paste(line_name, "(YSI)"),
-          marker = list(
-            symbol = "circle",
-            size = 6,
-            color = colors[[line_name]],  # match the line color
-            line = list(
-              color = "black",           # black outline
-              width = 1.5
-            )
-          )
+          data = data_filtered,
+          x = ~DateTime,
+          y = as.formula(paste0("~", yvar)),
+          name = paste(farm_name, sub(" .*", "", name)),
+          line = list(color = trace_color, width = 2)
         )
+        
+        # YSI
+        if(input$show_ysi){
+          
+          ysi_filtered <- ysi %>%
+            filter(Farm == farm_name) %>%
+            filter_time(month_val, biweek_val)
+          
+          if(nrow(ysi_filtered) > 0 && yvar %in% colnames(ysi_filtered)){
+            
+            p <<- add_markers(
+              p,
+              data = ysi_filtered,
+              x = ~DateTime,
+              y = as.formula(paste0("~", yvar)),
+              name = paste0(name, " (YSI)"),
+              marker = list(
+                symbol = "circle",
+                size = 6,
+                color = trace_color,
+                line = list(
+                  color = "black",
+                  width = 1.5
+                )
+              ),
+              showlegend = FALSE
+            )
+          }
+        }
       }
-      p
     }
     
-    farms <- input$farm_select
+    farms  <- input$farm_select
     params <- input$param_select
     
-    show_param <- function(param_name) param_name %in% params
-
+    show_param <- function(pn) pn %in% params
+    
     if("CMAST" %in% farms){
-      y <- ysi %>% filter(Farm == "CMAST")
-      
-      if(show_param("Temperature")){
-        p <- add_trace_safe(p, cmast_do, "DateTime", "Temp_C", "Temp CMAST")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp CMAST",
-                          show = input$show_ysi)
-      }
-      if(show_param("Dissolved Oxygen")){
-        p <- add_trace_safe(p, cmast_do, "DateTime", "DO", "DO CMAST")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO CMAST",
-                          show = input$show_ysi)
-      }
-      if(show_param("pH")){
-        p <- add_trace_safe(p, cmast_ph, "DateTime", "pH", "pH CMAST")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH CMAST",
-                          show = input$show_ysi)
-      }
-      if(show_param("Salinity")){
-        p <- add_trace_safe(p, cmast_sal, "DateTime", "Salinity", "Salinity CMAST")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity CMAST",
-                          show = input$show_ysi)
-      }
+      if(show_param("Temperature")) add_trace_auto(cmast_do,"Temp_C","Temp CMAST", "CMAST")
+      if(show_param("Dissolved Oxygen")) add_trace_auto(cmast_do,"DO","DO CMAST", "CMAST")
+      if(show_param("pH")) add_trace_auto(cmast_ph,"pH","pH CMAST", "CMAST")
+      if(show_param("Salinity")) add_trace_auto(cmast_sal,"Salinity","Salinity CMAST", "CMAST")
     }
     
     if("Stump Sound" %in% farms){
-      y <- ysi %>% filter(Farm == "Stump Sound")
-      
-      if(show_param("Temperature")){
-        p <- add_trace_safe(p, stump_do, "DateTime", "Temp_C", "Temp Stump")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Stump",
-                          show = input$show_ysi)
-      }
-      if(show_param("Dissolved Oxygen")){
-        p <- add_trace_safe(p, stump_do, "DateTime", "DO", "DO Stump")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Stump",
-                          show = input$show_ysi)
-      }
-      if(show_param("pH")){
-        p <- add_trace_safe(p, stump_ph, "DateTime", "pH", "pH Stump")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Stump",
-                          show = input$show_ysi)
-      }
-      if(show_param("Salinity")){
-        p <- add_trace_safe(p, stump_sal, "DateTime", "Salinity", "Salinity Stump")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Stump",
-                          show = input$show_ysi)
-      }
+      if(show_param("Temperature")) add_trace_auto(stump_do,"Temp_C","Temp Stump", "Stump Sound")
+      if(show_param("Dissolved Oxygen")) add_trace_auto(stump_do,"DO","DO Stump", "Stump Sound")
+      if(show_param("pH")) add_trace_auto(stump_ph,"pH","pH Stump", "Stump Sound")
+      if(show_param("Salinity")) add_trace_auto(stump_sal,"Salinity","Salinity Stump", "Stump Sound")
     }
     
     if("Ward Creek" %in% farms){
-      y <- ysi %>% filter(Farm == "Ward Creek")
-      
-      if(show_param("Temperature")){
-        p <- add_trace_safe(p, ward_do, "DateTime", "Temp_C", "Temp Ward Creek")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Ward Creek",
-                          show = input$show_ysi)
-      }
-      if(show_param("Dissolved Oxygen")){
-        p <- add_trace_safe(p, ward_do, "DateTime", "DO", "DO Ward Creek")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Ward Creek",
-                          show = input$show_ysi)
-      }
-      if(show_param("pH")){
-        p <- add_trace_safe(p, ward_ph, "DateTime", "pH", "pH Ward Creek")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Ward Creek",
-                          show = input$show_ysi)
-      }
-      if(show_param("Salinity")){
-        p <- add_trace_safe(p, ward_sal, "DateTime", "Salinity", "Salinity Ward Creek")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Ward Creek",
-                          show = input$show_ysi)
-      }
+      if(show_param("Temperature")) add_trace_auto(ward_do,"Temp_C","Temp Ward", "Ward Creek")
+      if(show_param("Dissolved Oxygen")) add_trace_auto(ward_do,"DO","DO Ward", "Ward Creek")
+      if(show_param("pH")) add_trace_auto(ward_ph,"pH","pH Ward", "Ward Creek")
+      if(show_param("Salinity")) add_trace_auto(ward_sal,"Salinity","Salinity Ward", "Ward Creek")
     }
     
     if("DUML" %in% farms){
-      y <- ysi %>% filter(Farm == "DUML")
-      
-      if(show_param("Temperature")){
-        p <- add_trace_safe(p, duml_do, "DateTime", "Temp_C", "Temp DUML")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp DUML",
-                          show = input$show_ysi)
-      }
-      if(show_param("Dissolved Oxygen")){
-        p <- add_trace_safe(p, duml_do, "DateTime", "DO", "DO DUML")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO DUML",
-                          show = input$show_ysi)
-      }
-      if(show_param("pH")){
-        p <- add_trace_safe(p, duml_ph, "DateTime", "pH", "pH DUML")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH DUML",
-                          show = input$show_ysi)
-      }
-      if(show_param("Salinity")){
-        p <- add_trace_safe(p, duml_sal, "DateTime", "Salinity", "Salinity DUML")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity DUML",
-                          show = input$show_ysi)
-      }
+      if(show_param("Temperature")) add_trace_auto(duml_do,"Temp_C","Temp DUML", "DUML")
+      if(show_param("Dissolved Oxygen")) add_trace_auto(duml_do,"DO","DO DUML", "DUML")
+      if(show_param("pH")) add_trace_auto(duml_ph,"pH","pH DUML", "DUML")
+      if(show_param("Salinity")) add_trace_auto(duml_sal,"Salinity","Salinity DUML", "DUML")
     }
     
     if("Nelson Bay" %in% farms){
-      y <- ysi %>% filter(Farm == "Nelson Bay")
-      
-      if(show_param("Temperature")){
-        p <- add_trace_safe(p, nelson_do, "DateTime", "Temp_C", "Temp Nelson")
-        p <- add_ysi_safe(p, y, "DateTime", "Temp_C", "Temp Nelson",
-                          show = input$show_ysi)
-      }
-      if(show_param("Dissolved Oxygen")){
-        p <- add_trace_safe(p, nelson_do, "DateTime", "DO", "DO Nelson")
-        p <- add_ysi_safe(p, y, "DateTime", "DO", "DO Nelson",
-                          show = input$show_ysi)
-      }
-      if(show_param("pH")){
-        p <- add_trace_safe(p, nelson_ph, "DateTime", "pH", "pH Nelson")
-        p <- add_ysi_safe(p, y, "DateTime", "pH", "pH Nelson",
-                          show = input$show_ysi)
-      }
-      if(show_param("Salinity")){
-        p <- add_trace_safe(p, nelson_sal, "DateTime", "Salinity", "Salinity Nelson")
-        p <- add_ysi_safe(p, y, "DateTime", "Salinity", "Salinity Nelson",
-                          show = input$show_ysi)
-      }
+      if(show_param("Temperature")) add_trace_auto(nelson_do,"Temp_C","Temp Nelson", "Nelson Bay")
+      if(show_param("Dissolved Oxygen")) add_trace_auto(nelson_do,"DO","DO Nelson", "Nelson Bay")
+      if(show_param("pH")) add_trace_auto(nelson_ph,"pH","pH Nelson", "Nelson Bay")
+      if(show_param("Salinity")) add_trace_auto(nelson_sal,"Salinity","Salinity Nelson", "Nelson Bay")
+    }
+    
+    # interactive y-axis rescale
+    y_range <- NULL
+    if(length(all_y_values) > 0){
+      y_range <- range(all_y_values, na.rm=TRUE)
     }
     
     p %>% layout(
-      title = input$custom_title,
-      xaxis = list(type = "date", title = "DateTime"),
-      yaxis = list(title = "Value"),
-      legend = list(title = list(text = "Parameter at Farm"))
+      title=input$custom_title,
+      xaxis=list(title="Date"),
+      yaxis=list(title="Value", range=y_range),
+      legend=list(orientation="h",
+                  itemwidth = 80)
     )
   })
 }
