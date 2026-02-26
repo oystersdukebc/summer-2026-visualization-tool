@@ -1,0 +1,872 @@
+---
+title: "Diandre' Mortality Script"
+output: html_document
+date: "2025-10-31"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+system("gh repo clone oystersdukebc/summer-2026-visualization-tool")
+```
+
+
+```{r}
+#setwd("OceanModelIndexComparison")
+#system("git pull origin main")  # or replace 'main' with the correct branch
+
+```
+
+
+
+
+
+
+
+```{r clear environment}
+rm(list = ls())
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library("survminer")
+theme_set(theme_classic())
+library(summarytools)
+library(readr)
+library(GGally)
+library(tidyverse)
+library(lubridate)
+library(writexl)
+library(wesanderson)
+library(tidyr)
+library(hms)
+library(paletteer)
+library(zoo)
+library(grid)
+library(patchwork)
+
+Mortality_All <- read_excel("C:\\Users\\drich\\OneDrive - Duke University\\Bass Mortality 2026.xlsx")
+Mortality_CMAST <- read_excel("C:\\Users\\drich\\OneDrive - Duke University\\Bass Mortality 2026.xlsx", sheet = "CMAST")
+Mortality_DUML <- read_excel("C:\\Users\\drich\\OneDrive - Duke University\\Bass Mortality 2026.xlsx", sheet = "DAF")
+Mortality_Ward <- read_excel("C:\\Users\\drich\\OneDrive - Duke University\\Bass Mortality 2026.xlsx", sheet = "Ward Creek")
+Mortality_Stump <- read_excel("C:\\Users\\drich\\OneDrive - Duke University\\Bass Mortality 2026.xlsx", sheet = "Stump Sound")
+Mortality_Nelson <- read_excel("C:\\Users\\drich\\OneDrive - Duke University\\Bass Mortality 2026.xlsx", sheet = "Nelson Bay")
+
+```
+
+
+
+```{r}
+
+# Add a Site column to each.. dont need this because its already in excel
+Mortality_CMAST <- Mortality_CMAST %>% mutate(Site = "CMAST")
+Mortality_Ward <- Mortality_Ward %>% mutate(Site = "Ward Creek")
+Mortality_DUML <- Mortality_DUML %>% mutate(Site = "DAF")
+
+```
+
+
+```{r}
+clean_data <- function(df) {
+  df %>%
+    mutate(
+      # Force Mortality Count to numeric. 
+      # This automatically turns "MISSING" and blanks into NA.
+      `Mortality Count` = suppressWarnings(as.numeric(as.character(`Mortality Count`)))
+    ) %>%
+    # Optional: Filter out rows where Date or Mortality Count is NA to keep the plot clean
+    filter(!is.na(`Mortality Count`) & !is.na(Date))
+}
+```
+
+
+```{r}
+# 4. Clean the data
+cmast_clean <- clean_data(Mortality_CMAST)
+ward_clean  <- clean_data(Mortality_Ward )
+daf_clean   <- clean_data(Mortality_DUML)
+stump_clean <- clean_data(Mortality_Stump)
+nelson_clean <- clean_data(Mortality_Nelson)
+```
+
+
+
+
+```{r}
+plot_function <- function(dataframe, plot_title) {
+  p <- dataframe %>%
+    ggplot(aes(x = as.factor(Date), y = `Mortality Count`)) +
+    geom_boxplot(outlier.shape = NA, fill = "lightgray") +
+    geom_jitter(width = 0.2, color = "steelblue", alpha = 0.7) +
+    geom_point(aes(color = GeneticStrand), size = 1) +
+  scale_color_manual(
+    values = c(
+      "New River (NR): Diploids from UNCW" = "purple",
+      "Triploids: Triploids purchased from Downeast Mariculture" = "yellow",
+      "Stump Sound (SS): Diploids from UNCW" = "orange",
+      "Cedar Island (CI): Diploids from UNCW" = "blue"
+    )
+  ) +
+    theme_classic() +
+    labs(x = "Date", y = "Mortality Total", title = plot_title) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  return(p)
+}
+
+
+
+###Environmental Variables 
+
+
+# Random Forest Package to see which environmental variable predict the best
+
+## Survivor ship % for each site, remaining oysters/initial total oysters
+
+```
+
+
+```{r}
+box_function <- function(dataframe, plot_title) {
+  p <- dataframe %>%
+    ggplot(aes(x = as.factor(Date), y = `Mortality Count`)) +
+    geom_point(aes(color = GeneticStrand), size = 2) +
+  scale_color_manual(
+    values = c(
+      "New River (NR): Diploids from UNCW" = "purple",
+      "Triploids: Triploids purchased from Downeast Mariculture" = "#F1C40F",
+      "Stump Sound (SS): Diploids from UNCW" = "orange",
+      "Cedar Island (CI): Diploids from UNCW" = "blue"
+    )
+  ) +
+    theme_classic() +
+    labs(x = "Date", y = "Mortality Total", title = plot_title) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  return(p)
+}
+
+
+###Possibly color code dots by Genetic Lines, might make another function for that
+
+###Environmental Variables 
+
+
+# Random Forest Package to see which environmental variable predict the best
+
+## Survivor ship % for each site, remaining oysters/initial total oysters
+
+```
+
+
+
+
+```{r}
+p1 <- plot_function(cmast_clean, "CMAST Mortality")
+
+print(p1)
+```
+
+```{r}
+cmast_genetics <- box_function(cmast_clean, "CMAST Genetic Strand Mortality")
+
+print(cmast_genetics)
+```
+
+
+
+
+
+
+
+```{r message=FALSE, warning=FALSE}
+
+
+p2 <- plot_function(ward_clean, "Ward Creek Mortality")
+print(p2)
+
+
+```
+
+```{r}
+ward_genetics <- box_function(ward_clean, "Ward Genetic Strand Mortality")
+
+print(ward_genetics)
+```
+
+
+
+
+
+```{r message=FALSE, warning=FALSE}
+p3 <- plot_function(daf_clean, "DAF Mortality")
+print(p3)
+
+###Change Y Axis to 2 figures 2,4,6,etc
+
+```
+
+
+```{r}
+daf_genetics <- box_function(daf_clean, "Duke Aqua Farm Strand Mortality")
+
+print(daf_genetics)
+```
+
+```{r message=FALSE, warning=FALSE}
+daf_survival <- plot_function(daf_clean, "DAF Mortality")
+print(daf_survival)
+
+###Change Y Axis to 2 figures 2,4,6,etc
+
+```
+
+
+```{r}
+bagplot_function <- function(dataframe, plot_title) {
+  p <- dataframe %>%
+    ggplot(aes(x = as.factor(Date), y = `Mortality Count`, color = GeneticStrand)) +
+    geom_boxplot(outlier.shape = NA, fill = "lightgray") +
+    geom_jitter(width = 0.2, alpha = 0.7) +
+    theme_classic() +
+    labs(x = "Date", y = "Mortality Total", color = "Bag", title = plot_title) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  return(p)
+}
+
+
+```
+
+```{r}
+stump_clean$Date <- as.Date(
+  paste(stump_clean$Date, "15 2025"),
+  format = "%b %d %Y"
+)
+```
+
+
+##Stump Sound 
+
+```{r}
+p4 <- plot_function(stump_clean, "Stump Sound Mortality")
+
+##Fix y axis so the months are in the same order
+
+print(p4)
+```
+
+
+
+
+
+
+```{r}
+stump_genetics <- box_function(stump_clean, "Stump Sound Strand Mortality")
+
+print(stump_genetics)
+```
+
+
+
+
+
+```{r Stats Table Function All Together}
+
+##Not split up by date
+
+stats_function <- function(dataframe) {
+  dataframe %>%
+    group_by(GeneticStrand) %>%
+    summarise(
+      mean_mortality = mean(`Mortality Count`, na.rm = TRUE),
+      sd_mortality   = sd(`Mortality Count`, na.rm = TRUE),
+      min_mortality  = min(`Mortality Count`, na.rm = TRUE),
+      max_mortality  = max(`Mortality Count`, na.rm = TRUE),
+      .groups = "drop"
+    )
+}
+
+
+
+```
+
+
+
+```{r Stats Table Function by Date}
+
+
+stats_datefunction <- function(dataframe) {
+  dataframe %>%
+    group_by(GeneticStrand, Date) %>%
+    summarise(
+      mean_mortality = mean(`Mortality Count`, na.rm = TRUE),
+      sd_mortality   = sd(`Mortality Count`, na.rm = TRUE),
+      min_mortality  = min(`Mortality Count`, na.rm = TRUE),
+      max_mortality  = max(`Mortality Count`, na.rm = TRUE),
+      .groups = "drop"
+    )
+}
+
+
+
+```
+
+
+```{r}
+CMAST_StatsDate <- stats_datefunction(cmast_clean)
+
+CMAST_StatsDate
+```
+ 
+
+
+```{r CMAST Mortality by Genetic Strain message=FALSE, warning=FALSE}
+
+CMAST_Genetic <- ggplot(cmast_clean, aes(x = as.factor(Date), y = `Mortality Count`, fill = GeneticStrand)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "CMAST Mortality Total by Genetic Strain",
+    x = "Date",
+    y = "Mortality"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "New River (NR): Diploids from UNCW" = "purple",
+      "Triploids: Triploids purchased from Downeast Mariculture" = "yellow",
+      "Stump Sound (SS): Diploids from UNCW" = "orange",
+      "Cedar Island (CI): Diploids from UNCW" = "blue"
+    )
+  ) +
+  theme_minimal()
+
+print(CMAST_Genetic)
+
+###Stats table for genetic line
+
+###July 9th, purple and yellow
+
+```
+
+```{r}
+CMAST_Stats <- stats_function(cmast_clean)
+
+CMAST_Stats
+```
+
+
+```{r}
+CMAST_StatsDate <- stats_datefunction(cmast_clean)
+
+CMAST_StatsDate
+```
+
+
+
+```{r message=FALSE, warning=FALSE, DUML Mortality by Genetic Strain message=FALSE}
+
+DUML_Genetic <- ggplot(daf_clean, aes(x = as.factor(Date), y = `Mortality Count`, fill = GeneticStrand)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "DUML Mortality Total by Genetic Strain",
+    x = "Date",
+    y = "Mortality"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "New River (NR): Diploids from UNCW" = "purple",
+      "Triploids: Triploids purchased from Downeast Mariculture" = "yellow",
+      "Stump Sound (SS): Diploids from UNCW" = "orange",
+      "Cedar Island (CI): Diploids from UNCW" = "blue"
+    )
+  ) +
+  theme_minimal()
+
+print(DUML_Genetic)
+
+### Change Y axis to different numbers (Possibly by 2s?) 
+
+### Make Y Axis scales for each site
+
+###Maybe change visualization of dates to read better (add more spacing maybe) 
+
+###Error bars
+
+```
+
+
+```{r Ward Mortality by Genetic Strain message=FALSE, warning=FALSE}
+
+Ward_Genetic <- ggplot(ward_clean, aes(x = as.factor(Date), y = `Mortality Count`, fill = GeneticStrand)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Ward Creek Mortality Total by Genetic Strain",
+    x = "Date",
+    y = "Mortality"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "New River (NR): Diploids from UNCW" = "purple",
+      "Triploids: Triploids purchased from Downeast Mariculture" = "yellow",
+      "Stump Sound (SS): Diploids from UNCW" = "orange",
+      "Cedar Island (CI): Diploids from UNCW" = "blue"
+    )
+  ) +
+  theme_minimal()
+
+print(Ward_Genetic)
+
+###Need to look at excel file for July dates
+
+### Clean up x-axis for better readability 
+
+```
+
+### Amy data is for Stump Sound Site 
+
+```{r}
+stump_clean$Date <- factor(
+  stump_clean$Date,
+  levels = c("Apr", "May", "June", "July", "Aug", "Sep", "Oct"),
+  ordered = TRUE
+)
+
+
+```
+
+
+
+```{r Ward Mortality by Genetic Strain message=FALSE, warning=FALSE}
+
+Stump_Genetic <- ggplot(stump_clean, aes(x = as.factor(Date), y = `Mortality Count`, fill = GeneticStrand)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Ward Creek Mortality Total by Genetic Strain",
+    x = "Date",
+    y = "Mortality"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "New River (NR): Diploids from UNCW" = "purple",
+      "Triploids: Triploids purchased from Downeast Mariculture" = "yellow",
+      "Stump Sound (SS): Diploids from UNCW" = "orange",
+      "Cedar Island (CI): Diploids from UNCW" = "blue"
+    )
+  ) +
+  theme_minimal()
+
+print(Stump_Genetic)
+
+###Need to look at excel file for July dates
+
+### Clean up x-axis for better readability 
+
+```
+
+
+
+```{r Stats Table by Genetic Line}
+
+
+stats_table <- stump_clean %>%
+  group_by(GeneticStrand) %>%
+  summarise(
+    mean_mortality = mean(`Mortality Count`, na.rm = TRUE),
+    sd_mortality   = sd(`Mortality Count`, na.rm = TRUE),
+    min_mortality  = min(`Mortality Count`, na.rm = TRUE),
+    max_mortality  = max(`Mortality Count`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+stats_table
+
+```
+
+```{r Stats Table by Genetic Line & Date}
+
+
+stats_table <- stump_clean %>%
+  group_by(GeneticStrand, Date) %>%
+  summarise(
+    mean_mortality = mean(`Mortality Count`, na.rm = TRUE),
+    sd_mortality   = sd(`Mortality Count`, na.rm = TRUE),
+    min_mortality  = min(`Mortality Count`, na.rm = TRUE),
+    max_mortality  = max(`Mortality Count`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+stats_table
+
+```
+
+
+### Survivorship Code 
+```{r}
+
+
+#Load survivorship data
+SurvivorshipSheet <- ("C:\\Users\\drich\\Downloads\\Survivorship25Renamed.xlsx")
+SurvivorshipSheetWC <- read_excel(SurvivorshipSheet, sheet = "WC")
+SurvivorshipSheetCMT <- read_excel(SurvivorshipSheet, sheet = "CMAST")
+SurvivorshipSheetDAF <- read_excel(SurvivorshipSheet, sheet = "DAF")
+
+SurvivorshipWC <- as.data.frame(SurvivorshipSheetWC)
+SurvivorshipCMT <- as.data.frame(SurvivorshipSheetCMT)
+SurvivorshipDAF <- as.data.frame(SurvivorshipSheetDAF)
+
+```
+
+```{r}
+
+#Setting site and combining dataframes:
+SurvivorshipWC$Source <- "WC"
+SurvivorshipCMT$Source <- "CMT"
+SurvivorshipDAF$Source <- "DAF"
+
+S_Combined <- bind_rows(SurvivorshipWC, SurvivorshipCMT, SurvivorshipDAF)
+
+```
+
+
+
+```{r}
+
+
+Survivorship <- function(dframe) {
+  
+  splot <- ggplot(dframe, 
+                  aes(x = Date, 
+                      y = Survivorship, 
+                      color = Site, 
+                      group = Site)) + 
+    
+    geom_line(linewidth = 1) + 
+    geom_point(size = 2) +
+    
+    coord_cartesian(ylim = c(0, 100)) +
+    
+    scale_color_manual(values = c(
+      "CMAST" = "darkgreen",
+      "DAF" = "red",
+      "Ward Creek" = "blue",
+      "Nelson Bay" = "purple",
+      "StumpSound" = "orange"
+    )) +
+    
+    theme_minimal() +
+    
+    labs(title = "Survivorship Curves by Site",
+         y = "Percent Survival",
+         x = "Date")
+  
+  return(splot)
+}
+
+
+```
+
+
+```{r}
+
+#Example usage
+CMASTCurve <- Survivorship(Mortality_CMAST)
+
+CMASTCurve
+
+```
+
+
+
+```{r}
+
+
+DUMLCurve <- Survivorship(Mortality_DUML)
+
+DUMLCurve
+
+```
+
+
+```{r}
+
+#Example usage
+STUMPCurve <- Survivorship(Mortality_Stump)
+
+STUMPCurve
+
+```
+
+
+```{r}
+
+#Example usage
+WARDCurve <- Survivorship(Mortality_Ward)
+
+WARDCurve
+
+```
+
+
+```{r}
+
+#Example usage
+NELSONCurve <- Survivorship(Mortality_Nelson)
+
+NELSONCurve
+
+```
+
+
+### Morality Code all Together 
+
+```{r}
+Mortality_CMAST$Date  <- as.Date(Mortality_CMAST$Date)
+Mortality_DUML$Date   <- as.Date(Mortality_DUML$Date)
+Mortality_Ward$Date   <- as.Date(Mortality_Ward$Date)
+Mortality_Nelson$Date <- as.Date(Mortality_Nelson$Date)
+```
+
+```{r}
+Mortality_Stump$Date <- as.Date(
+  paste(Mortality_Stump$Date, "15 2025"),
+  format = "%b %d %Y"
+)
+```
+
+
+```{r}
+AllSites <- list(
+  Mortality_CMAST,
+  Mortality_DUML,
+  Mortality_Stump,
+  Mortality_Ward,
+  Mortality_Nelson
+) %>%
+  lapply(function(df) {
+    
+    df <- df %>%
+      mutate(
+        Date = as.Date(Date),
+        across(where(is.character), ~trimws(.)),
+        `Mortality Count` = as.numeric(`Mortality Count`)
+      )
+    
+    return(df)
+  }) %>%
+  bind_rows()
+```
+```{r}
+AllSites <- AllSites %>%
+  filter(!is.na(`Mortality Count`))
+```
+
+
+```{r}
+AllSitesCurve <- Survivorship(AllSites)
+AllSitesCurve
+```
+
+```{r}
+library(dplyr)
+
+SurvivalSummary <- AllSites %>%
+  group_by(Site, Date) %>%
+  summarise(
+    mean_surv = mean(Survivorship, na.rm = TRUE),
+    sd_surv   = sd(Survivorship, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+
+```{r}
+library(ggplot2)
+
+PrettySurvival <- ggplot(SurvivalSummary,
+                         aes(x = Date,
+                             y = mean_surv,
+                             color = Site,
+                             group = Site)) +
+  geom_point(data = AllSites,
+           aes(x = Date,
+               y = Survivorship,
+               color = Site),
+           alpha = 0.12,
+           size = 3,
+           inherit.aes = FALSE) +
+  
+  # Error bars (mean ± SD)
+  geom_errorbar(aes(ymin = mean_surv - sd_surv,
+                    ymax = mean_surv + sd_surv),
+                width = 5,
+                linewidth = 0.9,
+                alpha = 0.6) +
+  
+  # Mean line
+  geom_line(linewidth = 1.5) +
+  
+  # Mean points
+  geom_point(size = 3) +
+  
+  coord_cartesian(ylim = c(20, 100)) +
+  
+  scale_color_manual(values = c(
+    "CMAST" = "#C84E00",
+    "DAF" = "#0577B1",
+    "Ward Creek" = "#009E73",
+    "Nelson Bay" = "#8E44AD",
+    "StumpSound" = "#E69F00"
+  )) +
+  
+  labs(x = "Date",
+       y = "% Survivorship per Bag",
+       color = "Site") +
+  
+  theme_classic(base_size = 16) +
+  
+  theme(
+    axis.title = element_text(face = "bold"),
+    legend.title = element_text(face = "bold"),
+    legend.position = "right"
+  )
+
+PrettySurvival
+
+###Oyster mortality across all four sites
+```
+
+```{r}
+PrettySurvival +
+  scale_x_date(date_breaks = "1 month",
+               date_labels = "%b") +
+theme_minimal() +
+    
+    labs(title = "Oyster Survivorship Across Time Over All Sites")
+
+
+###Oyster mortality across all four sites 
+```
+
+
+
+
+
+```{r}
+cmast_clean$FacetSite  <- "CMAST"
+daf_clean$FacetSite   <- "DUML"
+stump_clean$FacetSite  <- "Stump Sound"
+ward_clean$FacetSite   <- "Ward Creek"
+```
+
+
+
+
+  
+
+
+
+```{r}
+AllSites <- bind_rows(
+  cmast_clean,
+  daf_clean,
+  ward_clean,
+  nelson_clean
+)
+```
+
+```{r}
+stump_clean$Date <- as.Date(
+  paste(stump_clean$Date, "15 2025"),
+  format = "%b %d %Y"
+)
+```
+
+
+
+```{r}
+AllSites$Date <- as.Date(AllSites$Date)
+AllSites$Strain<- as.factor(AllSites$Strain)
+AllSites$Site <- as.factor(AllSites$Site)
+```
+
+```{r}
+library(dplyr)
+
+# ---- 1. Fix Stump dates (month-only issue) ----
+stump_clean$Date <- as.Date(
+  paste(stump_clean$Date, "15 2025"),
+  format = "%b %d %Y"
+)
+
+# ---- 2. Ensure other datasets have proper Date format ----
+cmast_clean$Date  <- as.Date(cmast_clean$Date)
+daf_clean$Date    <- as.Date(daf_clean$Date)
+ward_clean$Date   <- as.Date(ward_clean$Date)
+nelson_clean$Date <- as.Date(nelson_clean$Date)
+
+# ---- 3. Bind ALL sites (including Stump) ----
+AllSites <- bind_rows(
+  cmast_clean,
+  daf_clean,
+  ward_clean,
+  nelson_clean,
+  Mortality_Stump
+)
+
+# ---- 4. Standardize column types AFTER binding ----
+AllSites <- AllSites %>%
+  mutate(
+    Date   = as.Date(Date),
+    Strain = as.factor(Strain),
+    Site   = as.factor(Site)
+  )
+```
+
+
+
+```{r}
+ggplot(AllSites,
+       aes(x = Date,
+           y = `Mortality Count`,
+           color = Site,
+           group = Site)) +
+  
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  
+  facet_wrap(~ Strain) +
+  
+  coord_cartesian(ylim = c(0, 120)) +
+  
+  scale_y_continuous(breaks = seq(0, 120, by = 20)) +
+  
+  theme_classic(base_size = 15)
+```
+```{r}
+ggplot(AllSites,
+       aes(x = Date,
+           y = `Mortality Strain`,
+           color = Site,
+           group = Site)) +
+  
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  
+  facet_wrap(~ Strain) +
+  
+  coord_cartesian(ylim = c(0, 150)) +
+  
+  scale_y_continuous(breaks = seq(0, 150, by = 20)) +
+  
+  theme_classic(base_size = 15)
+```
+
+
+
+

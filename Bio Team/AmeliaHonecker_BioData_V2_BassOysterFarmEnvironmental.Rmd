@@ -1,0 +1,326 @@
+---
+title: "Honecker_BioData_V2_BassOysterFarmEnvironmental"
+author: "Molly Honecker"
+date: "2025-03-04"
+output: html_document
+---
+
+# Load packages
+
+```{r}
+
+library(readxl)
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(Rmisc)
+theme_set(theme_classic())
+
+```
+
+# Load data
+
+```{r}
+##### My tester 
+R.version.string
+
+BodyConditionTestCMAST <- read_excel("/Users/ameliamcdonald/Documents/Duke Grad/Bass/BioTeam/Body Condition 2025.xlsx", sheet = "CMAST")
+BodyConditionTestWard <- read_excel("/Users/ameliamcdonald/Documents/Duke Grad/Bass/BioTeam/Body Condition 2025.xlsx", sheet = "WardCreek")
+BodyConditionTestDUML <- read_excel("/Users/ameliamcdonald/Documents/Duke Grad/Bass/BioTeam/Body Condition 2025.xlsx", sheet = "DUML")
+
+#not sure if this is needed 
+#BodyCondition_Ratio_CMAST <- filter(BodyShellRatio_g, Site == "CMAST")
+```
+##### Previous Code 
+#Mortality_All <- read_excel("/Users/ameliamcdonald/Documents/Duke Grad/Bass/BioTeam/Body Condition 2025.xlsx", sheet = "CMAST")
+#Mortality_Continuous <- read_excel("Z:/Oyster Farm Environmental/OYSTERdataforR/BIOLOGICAL TEAM/Data/Processed/OysterMortalityData_Processed.xlsx", sheet = "OnlyContinuous")
+#Mortality_Continuous_JulyDUMLMerged <- read_excel("Z:/Oyster Farm Environmental/OYSTERdataforR/BIOLOGICAL TEAM/Data/Processed/OysterMortalityData_Processed.xlsx", sheet = "OnlyContinuous_JulyDUMLMerged")
+#Mortality_Continuous_PreventFranken <- read_excel("Z:/Oyster Farm Environmental/OYSTERdataforR/BIOLOGICAL TEAM/Data/Processed/OysterMortalityData_Processed.xlsx", sheet = "NoFrankenstein_OnlyContinuous")
+#Mortality_FirstLast <-read_excel("Z:/Oyster Farm Environmental/OYSTERdataforR/BIOLOGICAL TEAM/Data/Processed/OysterMortalityData_Processed.xlsx", sheet = "FirstLast")
+
+
+#Mortality_Continuous_NoMM <- filter(Mortality_Continuous, Strain != "MM")
+#Mortality_Continuous_JulyDUMLMerged_NoMM <- filter(Mortality_Continuous_JulyDUMLMerged, Strain != "MM")
+#Mortality_Continuous_DUML <- filter(Mortality_Continuous, Site == "DUML")
+#Mortality_Continuous_DUML_NoMM <- filter(Mortality_Continuous_DUML, Strain != "MM")
+#Mortality_Continuous_CMAST <- filter(Mortality_Continuous, Site == "CMAST")
+#Mortality_Continuous_CMAST_NoMM <- filter(Mortality_Continuous_CMAST, Strain != "MM")
+#Mortality_Continuous_PreventFranken_NoMM <- filter(Mortality_Continuous_PreventFranken, Strain != "MM")
+
+Mortality_FirstLast_DUML <- filter(Mortality_FirstLast, Site == "DUML")
+Mortality_FirstLast_CMAST <- filter(Mortality_FirstLast, Site == "CMAST")
+#####
+```
+
+# SE/SD matrices
+
+```{r}
+
+## Calculate sd, se, and more for groups produced using "group" variables)
+
+se <- summarySE(BodyConditionTestCMAST, 
+                          measurevar="BodyShellRatio_g", 
+                          groupvars=c("Date","Site"))
+
+BodyConditionByStrain <- summarySE(BodyConditionTestCMAST, 
+                          measurevar="BodyShellRatio_g", 
+                          groupvars=c("Date","Color"))
+
+```
+
+
+```{r}
+
+BodyConditionFunction <- function(dataframe) 
+  ggplot(dataframe, aes(x = Date, y = BodyShellRatio_g,
+                 color = Color)) +
+  
+  #Scatter plot (individual data points)
+  geom_point(data = dataframe,
+            aes(x = Date,
+                y = BodyShellRatio_g,
+                color = Color),
+            size = 4,
+            alpha = 0.075) +
+  
+  # Smoothed line (for trend)
+  geom_line(data = dataframe,
+            aes(x = Date,
+                y = BodyShellRatio_g,
+                color = Color),
+            stat = "smooth",
+            # method = "gam",
+            size = 1.5,
+            alpha = 0.75,
+            se = F)
+
+
+print(BodyConditionFunction)
+
+```
+
+```{r warning=FALSE}
+DUML_plot <- BodyConditionFunction(BodyConditionTestDUML)
+DUML_plot
+```
+
+
+```{r}
+WARD_plot <- BodyConditionFunction(BodyConditionTestWard)
+WARD_plot
+```
+
+
+```{r}
+CMAST_plot <- BodyConditionFunction(BodyConditionTestCMAST)
+CMAST_plot
+```
+
+
+# Mortality graph
+
+```{r}
+#Old code: plots with smoothed lines 
+
+CMASTBodyCondition <- ggplot(BodyConditionTestCMAST, aes(x = Date, y = BodyShellRatio_g,
+                 color = Color)) +
+  
+  #Scatter plot (individual data points)
+  geom_point(data = BodyConditionTestCMAST,
+            aes(x = Date,
+                y = BodyShellRatio_g,
+                color = Color),
+            size = 4,
+            alpha = 0.075) +
+  
+  # Smoothed line (for trend)
+  geom_line(data = BodyConditionTestCMAST,
+            aes(x = Date,
+                y = BodyShellRatio_g,
+                color = Color),
+            stat = "smooth",
+            # method = "gam",
+            size = 1.5,
+            alpha = 0.75,
+            se = F) 
+
+print(CMASTBodyShell)
+
+```
+```{r}
+CMAST_plot <- BodyConditionFunction(BodyConditionTestCMAST)
+CMAST_plot
+```
+
+
+# Mortality graph
+
+```{r}
+#Bar Chart: by farm, date as x axis plotting color
+
+CMASTBodyCondition <- ggplot(BodyConditionTestCMAST, aes(x = as.factor(Date), y = BodyShellRatio_g, fill = Color)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "CMAST Body Condition by Genetic Strain",
+    x = "Date",
+    y = "Body Condition"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Purple" = "purple", 
+      "Blue" = "blue",
+      "Yellow" = "yellow",
+      "Orange" = "orange"
+    )
+  )
+  theme_minimal()
+
+
+print(CMASTBodyCondition)
+```
+```{r}
+#with function 
+BodyConditionFunction3 <- function(dataframe, plot_title) {
+
+BodyConditionFunction3 <- ggplot(dataframe, aes(x = as.factor(Date), y = BodyShellRatio_g, fill = Color)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = plot_title,
+    x = "Date",
+    y = "Body Condition"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Purple" = "purple", 
+      "Blue" = "blue",
+      "Yellow" = "yellow",
+      "Orange" = "orange"
+    )
+  )
+  theme_minimal()
+
+
+print(BodyConditionFunction3)
+}
+```
+```{r}
+CMAST_plot3 <- BodyConditionFunction3(BodyConditionTestCMAST, "CMAST Body Condition by Date")
+print(CMAST_plot3)
+```
+```{r}
+DUML_plot3 <- BodyConditionFunction3(BodyConditionTestDUML, "DUML Body Condition by Date")
+print(DUML_plot3)
+```
+```{r}
+Ward_plot3 <- BodyConditionFunction3(BodyConditionTestWard, "Ward Body Condition by Date")
+print(Ward_plot3)
+```
+
+
+```{r}
+#Bar chart: by farm, color as x axis plotting month
+BodyConditionTestCMAST$Month <- factor(BodyConditionTestCMAST$Month, levels = c("June", "July", "September"))
+
+CMASTBodyCondition <- ggplot(BodyConditionTestCMAST, aes(x = Color, y = BodyShellRatio_g, fill = Month)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "CMAST Body Condition by Genetic Strain",
+    x = "Color",
+    y = "Body Condition"
+  ) +
+  scale_fill_manual(
+    values = c(
+     "June" = "lightblue", 
+      "July" = "lightblue3",
+      "September" = "lightblue4"
+    )
+  )
+  theme_minimal()
+
+
+print(CMASTBodyCondition)
+
+```
+```{r}
+#Bar chart: by farm, color as x axis plotting month
+
+BodyConditionFunction2 <- function(dataframe, plot_title) {
+dataframe$Month <- factor(dataframe$Month, levels = c("June", "July", "September"))
+
+BodyConditionFunction2 <- ggplot(dataframe, aes(x = Color, y = BodyShellRatio_g, fill = Month)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = plot_title,
+    x = "Color",
+    y = "Body Condition"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "June" = "lightblue", 
+      "July" = "lightblue3",
+      "September" = "lightblue4"
+    )
+  )
+  theme_minimal()
+
+
+print(BodyConditionFunction2)
+}
+```
+```{r}
+CMAST_plot2 <- BodyConditionFunction2(BodyConditionTestCMAST, "CMAST Body Condition")
+print(CMAST_plot2)
+```
+```{r}
+DUML_plot2 <- BodyConditionFunction2(BodyConditionTestDUML, "DUML Body Condition")
+print(DUML_plot2)
+```
+```{r}
+Ward_plot2 <- BodyConditionFunction2(BodyConditionTestWard, "Ward Body Condition")
+print(Ward_plot2)
+```
+
+
+
+  # Error bars (with SD)
+  geom_pointrange(data = BodyConditionTestCMAST,
+                aes(x = Date,
+                    y = BodyShellRatio_g,
+                    ymin = BodyShellRatio_g-sd,
+                    ymax = BodyShellRatio_g+sd,
+                    color = Site),
+                linewidth = 1
+                # alpha = 0.6
+                ) +
+
+  # Customize color scheme
+  scale_color_manual(values = c("CMAST" = "#C84E00", "DUML" = "#0577B1")) +
+  
+  # Axis labels
+  labs(x = "Date", 
+       y = "Body Mass Ratio") +
+  
+  # Get rid of legend for color
+  guides(color = "none") +
+  
+  # Facet
+  
+  # facet_wrap(vars(Site),
+  #            nrow = 2) +
+  
+  # Adjust text sizes for axis and legend
+  theme(
+    axis.text = element_text(size = 14),   # Increase axis text size
+    axis.title = element_text(size = 16),  # Increase axis title size
+    legend.text = element_text(size = 14), # Increase legend text size
+    legend.title = element_text(size = 16) # Increase legend title size
+  )
+
+# Uncomment the below to save the most recently produced graph to the specified path
+
+# ggsave("PATH TO SAVE LOCATION",
+#       width = 10,
+#       height = 6)
+
+```
+
